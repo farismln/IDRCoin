@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.28;
+
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IUSDT} from "./interfaces/IUSDT.sol";
 import {IBankHub} from "./interfaces/IBankHub.sol";
@@ -18,11 +19,12 @@ contract IDRCoin is ERC20 {
 
     // constant
     // convertion rate from USDT to IDR
-    uint256 constant public CONVERSION_RATE = 16000;
+    uint256 public constant CONVERSION_RATE = 16000;
+    uint8 public constant DECIMALS = 18;
 
     // enforce ppn 12% for ALL MINTING transaction involving IDRC token
-    uint256 constant public TAX = 12;
-    uint256 constant public DENOMINATOR = 100;
+    uint256 public constant TAX = 12;
+    uint256 public constant DENOMINATOR = 100;
 
     modifier onlyAdmin() {
         if (msg.sender != admin) {
@@ -47,8 +49,16 @@ contract IDRCoin is ERC20 {
     error BankCannotManualApprove();
 
     // event
-    event IDRC_Transfer(address indexed from, address indexed to, uint256 value);
-    event IDRC_Approval(address indexed owner, address indexed spender, uint256 value);
+    event IDRC_Transfer(
+        address indexed from,
+        address indexed to,
+        uint256 value
+    );
+    event IDRC_Approval(
+        address indexed owner,
+        address indexed spender,
+        uint256 value
+    );
     event IDRC_Mint(address indexed to, uint256 value);
     event IDRC_Burn(address indexed from, uint256 value);
 
@@ -81,9 +91,12 @@ contract IDRCoin is ERC20 {
     // external/public function
     // anyone can buy IDRC with USDT with fixed conversion rate
     function convertUSDtoIDR(uint256 amountInUSD) external {
-        usdt.transfer(address(this), amountInUSD);
-        uint256 amountInIDR = amountInUSD * CONVERSION_RATE * decimals();
-        _mint(msg.sender, amountInIDR);
+        usdt.transferFrom(msg.sender, address(this), amountInUSD);
+        // first we normalize the amount in usd by dividing it with its own decimals
+        // then we multiply it with the conversion rate and IDRC decimals
+        // result is the amount of IDRC to mint with the correct decimals
+        uint256 amountInIDR = (amountInUSD / 10 ** usdt.decimals()) *CONVERSION_RATE *  10 ** decimals();
+        mint_(msg.sender, amountInIDR);
 
         emit IDRC_Mint(msg.sender, amountInIDR);
     }
@@ -93,8 +106,8 @@ contract IDRCoin is ERC20 {
         address _spender,
         uint256 _amount
     ) public override returns (bool) {
-        // we dont want the bank to manually approve 
-        // because it can be exploited by the bank, they can set _amount to 0 and the BankHub 
+        // we dont want the bank to manually approve
+        // because it can be exploited by the bank, they can set _amount to 0 and the BankHub
         // cannot spend the loaned IDRC
         if (IBankHub(bankHub).isWhiteListed(msg.sender)) {
             revert BankCannotManualApprove();
@@ -178,6 +191,10 @@ contract IDRCoin is ERC20 {
         return balances[_addr];
     }
 
+    function decimals() public pure override returns (uint8) {
+        return DECIMALS;
+    }
+
     // setter/admin function
     // set the bankHub address
     function setBankHub(address _bankHub) external onlyAdmin {
@@ -194,7 +211,7 @@ contract IDRCoin is ERC20 {
         admin = admin;
     }
 
-    // change taxCollector address 
+    // change taxCollector address
     function changeTaxCollector(address _taxCollector) external onlyAdmin {
         taxCollector = _taxCollector;
     }

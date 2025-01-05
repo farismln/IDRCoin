@@ -3,13 +3,14 @@
 pragma solidity 0.8.28;
 
 import {IDRCoin} from "./IDRCoin.sol";
-import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
-contract BankHub is UUPSUpgradeable {
+contract BankHub {
     // constants
     uint32 public constant MIN_INTEREST_RATE = 5;
+    uint32 public constant MAX_INTEREST_RATE = 100;
     uint32 public constant DENOMINATOR = 100;
     uint256 public constant MIN_LOAN_AMOUNT = 10e18;
+    uint256 public constant MAX_LOAN_AMOUNT = 100e18;
 
     // state variables
     address public owner;
@@ -47,12 +48,8 @@ contract BankHub is UUPSUpgradeable {
     event Withdraw(address indexed user, address indexed bank, uint256 amount);
     event Approved(address indexed bank);
 
-    constructor() {
-        _disableInitializers();
-    }
-
-    function initialize() public initializer {
-        owner = msg.sender;
+    constructor(address _owner) {
+        owner = _owner;
     }
 
     // user function
@@ -95,9 +92,9 @@ contract BankHub is UUPSUpgradeable {
         idrcoin.mint(msg.sender, interest);
 
         // transfer amount
-        idrcoin.transferFrom(address(_fromBank), msg.sender, _amount);
+        idrcoin.transferFrom(_fromBank, msg.sender, _amount);
 
-        emit Withdraw(msg.sender, _fromBank, _amount);
+        emit Withdraw(msg.sender, _fromBank, _amount + interest);
     }
 
     // bank function
@@ -108,6 +105,9 @@ contract BankHub is UUPSUpgradeable {
     ) public onlyWhiteListed {
         require(msg.sender == _bank, "only bank can receive loan from BankHub");
         if (_amount < MIN_LOAN_AMOUNT) {
+            revert insufficientLoanAmount();
+        }
+        if (_amount > MAX_LOAN_AMOUNT) {
             revert insufficientLoanAmount();
         }
 
@@ -126,6 +126,11 @@ contract BankHub is UUPSUpgradeable {
         owner = _newOwner;
     }
 
+    // set IDRCoin address
+    function setIDRCoin(address _idrcoin) public onlyOwner {
+        idrcoin = IDRCoin(_idrcoin);
+    }
+
     // whitelist partner bank, set interest rate and approve unlimited IDRCoin transfer by this contract
     function whiteList(address _bank) public onlyOwner {
         whiteListed[_bank] = true;
@@ -137,15 +142,11 @@ contract BankHub is UUPSUpgradeable {
 
     // revoke whitelist from partner bank
     // collect all IDRCoin from bank
+    // this is used to punish bank that misbehave
     function revokeWhiteList(address _bank) public onlyOwner {
         if (idrcoin.balanceOf(_bank) > 0) {
             idrcoin.transferFrom(_bank, owner, idrcoin.balanceOf(_bank));
         }
-    }
-
-    // Implementation of the required UUPSUpgradeable function
-    function _authorizeUpgrade(address newImplementation) internal override {
-        require(msg.sender == owner, "only owner can authorize upgrades");
     }
 
     // view function

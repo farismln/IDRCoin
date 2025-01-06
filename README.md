@@ -22,6 +22,10 @@ But anyone can create their own bank and join our platform by providing KYC to u
 
 ## Scope
 
+All contracts would be deployed on Ethereum mainnet.
+
+The scope of this audit is limited to the following files:
+
 ```tree
 src/IDRCoin.sol
 src/BankHub.sol

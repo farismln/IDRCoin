@@ -54,7 +54,7 @@ contract BankHub {
 
     // user function
     // depositing IDRCoin to whitelisted bank, user would then have saving account with interest
-    function depositToBank(uint256 _amount, address _toBank) public {
+    function depositToBank(uint256 _amount, address _toBank) external {
         if (!whiteListed[_toBank]) {
             revert notWhiteListed();
         }
@@ -74,7 +74,7 @@ contract BankHub {
 
     // withdraw IDRCoin from saving account
     // user's interest would be applied here
-    function withdraw(uint256 _amount, address _fromBank) public {
+    function withdraw(uint256 _amount, address _fromBank) external {
         require(whiteListed[_fromBank], "bank not whitelisted");
         require(savingAmount[msg.sender] >= _amount, "insufficient balance");
 
@@ -102,7 +102,7 @@ contract BankHub {
     function getIDRCoinLoan(
         address _bank,
         uint256 _amount
-    ) public onlyWhiteListed {
+    ) external onlyWhiteListed {
         require(msg.sender == _bank, "only bank can receive loan from BankHub");
         if (_amount < MIN_LOAN_AMOUNT) {
             revert insufficientLoanAmount();
@@ -116,23 +116,23 @@ contract BankHub {
 
     // set interest rate for saving account
     // this function would retroactively apply the new interest rate to all user savingAmount
-    function setInterestRate(uint32 _interestRate) public onlyWhiteListed {
+    function setInterestRate(uint32 _interestRate) external onlyWhiteListed {
         interestRate[msg.sender] = _interestRate;
     }
 
     // admin function
     // change owner
-    function changeOwner(address _newOwner) public onlyOwner {
+    function changeOwner(address _newOwner) external onlyOwner {
         owner = _newOwner;
     }
 
     // set IDRCoin address
-    function setIDRCoin(address _idrcoin) public onlyOwner {
+    function setIDRCoin(address _idrcoin) external onlyOwner {
         idrcoin = IDRCoin(_idrcoin);
     }
 
     // whitelist partner bank, set interest rate and approve unlimited IDRCoin transfer by this contract
-    function whiteList(address _bank) public onlyOwner {
+    function whiteList(address _bank) external onlyOwner {
         whiteListed[_bank] = true;
         interestRate[_bank] = MIN_INTEREST_RATE;
 
@@ -143,20 +143,20 @@ contract BankHub {
     // revoke whitelist from partner bank
     // collect all IDRCoin from bank
     // this is used to punish bank that misbehave
-    function revokeWhiteList(address _bank) public onlyOwner {
+    function revokeWhiteList(address _bank) external onlyOwner {
         if (idrcoin.balanceOf(_bank) > 0) {
             idrcoin.transferFrom(_bank, owner, idrcoin.balanceOf(_bank));
         }
     }
 
     // view function
-    function isWhiteListed(address _bank) public view returns (bool) {
+    function isWhiteListed(address _bank) external view returns (bool) {
         return whiteListed[_bank];
     }
 
     function checkSavingAmountIncludingInterest(
         address _user, address _bank
-    ) public view returns (uint256) {
+    ) external view returns (uint256) {
         uint256 timePassed = block.timestamp - depositTimestamp[_user];
         uint256 interest = (savingAmount[_user] *
             timePassed *

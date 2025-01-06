@@ -155,12 +155,12 @@ contract BankHub {
     }
 
     function checkSavingAmountIncludingInterest(
-        address _user
+        address _user, address _bank
     ) public view returns (uint256) {
         uint256 timePassed = block.timestamp - depositTimestamp[_user];
         uint256 interest = (savingAmount[_user] *
             timePassed *
-            interestRate[_user]) /
+            interestRate[_bank]) /
             DENOMINATOR /
             365 days;
         uint256 taxPercent = idrcoin.TAX();

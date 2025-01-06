@@ -80,7 +80,7 @@ contract BankHub {
 
         // calculate interest
         uint256 timePassed = block.timestamp - depositTimestamp[msg.sender];
-        uint256 interest = (_amount * timePassed * interestRate[msg.sender]) /
+        uint256 interest = (_amount * timePassed * interestRate[_fromBank]) /
             DENOMINATOR /
             365 days;
 

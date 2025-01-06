@@ -195,6 +195,13 @@ contract IDRCoin is ERC20 {
         return DECIMALS;
     }
 
+    function allowance(
+        address _owner,
+        address _spender
+    ) public view override returns (uint256) {
+        return allowances[_owner][_spender];
+    }
+
     // setter/admin function
     // set the bankHub address
     function setBankHub(address _bankHub) external onlyAdmin {

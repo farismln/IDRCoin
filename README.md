@@ -18,7 +18,7 @@ You can deposit your IDRCoin to BankHub by providing Bank address and gain inter
 
 For now our official partner is Bank ABC and Bank IRB.
 
-But anyone can create their own bank and join our platform by providing KYC to us.
+But anyone can create their own bank and join our platform by providing KYC to us and some payment (DM us for details).
 
 ## Scope
 
@@ -60,3 +60,19 @@ $ forge build
 $ forge test
 ```
 
+### Coverage
+
+```shell
+$ forge coverage
+╭--------------------+------------------+------------------+----------------+-----------------╮
+| File               | % Lines          | % Statements     | % Branches     | % Funcs         |
++=============================================================================================+
+| src/BankHub.sol    | 91.07% (51/56)   | 90.74% (49/54)   | 35.71% (5/14)  | 100.00% (13/13) |
+|--------------------+------------------+------------------+----------------+-----------------|
+| src/IDRCoin.sol    | 84.72% (61/72)   | 85.25% (52/61)   | 11.11% (1/9)   | 90.00% (18/20)  |
+|--------------------+------------------+------------------+----------------+-----------------|
+| test/ERC20Mock.sol | 92.59% (25/27)   | 94.74% (18/19)   | 50.00% (5/10)  | 87.50% (7/8)    |
+|--------------------+------------------+------------------+----------------+-----------------|
+| Total              | 88.39% (137/155) | 88.81% (119/134) | 33.33% (11/33) | 92.68% (38/41)  |
+╰--------------------+------------------+------------------+----------------+-----------------╯
+```

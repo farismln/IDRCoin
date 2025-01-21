@@ -35,6 +35,7 @@ src/BankHub.sol
 
 1. ALL interaction with DEX is out of scope in this audit.
 2. Currently there are no user withdrawal function in `IDRCoin` contract. So user can only bought IDRCoin with USDT, but cannot sell it back to USDT.
+3. USDT blacklisting this contract is out of scope.
 
 ## Known Issue
 

@@ -39,7 +39,8 @@ src/BankHub.sol
 
 ## Known Issue
 
-`IDRCoin::conversionRate` is fixed at 16000.
+1. `IDRCoin::conversionRate` is fixed at 16000.
+2. `BankHub::getIDRCoinLoan` can be used to get IDRCoin without any collateral and no function to pay back. This is intended.
 
 ## Actors and Roles
 
